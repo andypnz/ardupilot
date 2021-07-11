@@ -987,9 +987,12 @@ public:
     // frsky backend
     AP_Frsky_Telem *frsky;
 
-#if !HAL_MINIMIZE_FEATURES
+
     // LTM backend
     AP_LTM_Telem ltm_telemetry;
+
+#if !HAL_MINIMIZE_FEATURES
+
     // Devo backend
     AP_DEVO_Telem devo_telemetry;
 #endif
