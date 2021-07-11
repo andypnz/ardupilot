@@ -173,7 +173,7 @@ void AP_AHRS_NavEKF::update(bool skip_ins_update)
         _view->update(skip_ins_update);
     }
 
-#if !HAL_MINIMIZE_FEATURES && AP_AHRS_NAVEKF_AVAILABLE
+#if AP_AHRS_NAVEKF_AVAILABLE
     // update NMEA output
     update_nmea_out();
 #endif

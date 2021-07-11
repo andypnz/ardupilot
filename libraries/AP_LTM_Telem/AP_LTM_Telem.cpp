@@ -186,30 +186,30 @@ void AP_LTM_Telem::send_Aframe(void)
     lt_buff[7] = (heading >> 8 * 0) & 0xFF;
     lt_buff[8] = (heading >> 8 * 1) & 0xFF;
     send_LTM(lt_buff, LTM_AFRAME_SIZE);
-    _ltm_scheduler++;
+//    _ltm_scheduler++;
 }
 
 // send LTM
 void AP_LTM_Telem::generate_LTM(void)
 {
     if (_ltm_scheduler & 1) {   // is odd
-        send_Aframe();
-    } else {                    // is even
-        if (_ltm_scheduler % 4 == 0) {
-            send_Sframe();
-        } else {
+//        send_Aframe();
+//    } else {                    // is even
+//        if (_ltm_scheduler % 4 == 0) {
+//            send_Sframe();
+//        } else {
             send_Gframe();
-        }
-    }
-    if (_ltm_scheduler > 9) {
-        _ltm_scheduler = 1;
+//        }
+//    }
+//    if (_ltm_scheduler > 9) {
+//        _ltm_scheduler = 1;
     }
 }
 
 void AP_LTM_Telem::tick(void)
 {
     uint32_t now = AP_HAL::millis();
-    if (now - _last_frame_ms >= 100) {
+    if (now - _last_frame_ms >= 200) {
         _last_frame_ms = now;
         generate_LTM();
     }

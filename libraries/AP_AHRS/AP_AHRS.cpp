@@ -171,7 +171,7 @@ void AP_AHRS::init()
 {
     update_orientation();
 
-#if !HAL_MINIMIZE_FEATURES && AP_AHRS_NAVEKF_AVAILABLE
+#if AP_AHRS_NAVEKF_AVAILABLE
     _nmea_out = AP_NMEA_Output::probe();
 #endif
 }
@@ -495,7 +495,7 @@ float AP_AHRS::get_EAS2TAS(void) const {
 
 void AP_AHRS::update_nmea_out()
 {
-#if !HAL_MINIMIZE_FEATURES && AP_AHRS_NAVEKF_AVAILABLE
+#if AP_AHRS_NAVEKF_AVAILABLE
     if (_nmea_out != nullptr) {
         _nmea_out->update();
     }
