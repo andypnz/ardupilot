@@ -2202,8 +2202,12 @@ void GCS::setup_uarts()
             frsky = nullptr;
         }
     }
+	
+	ltm_telemetry.init();
+		
+		
 #if !HAL_MINIMIZE_FEATURES
-    ltm_telemetry.init();
+
     devo_telemetry.init();
 #endif
 }

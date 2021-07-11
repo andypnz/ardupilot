@@ -179,7 +179,8 @@ void AP_BoardLED2::update(void)
                 }
             } else {
                 // ARM led solid
-                hal.gpio->write(HAL_GPIO_A_LED_PIN, HAL_GPIO_LED_ON);
+				//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ARP
+                hal.gpio->write(HAL_GPIO_A_LED_PIN, HAL_GPIO_LED_OFF);
             }
         }else{
             if ((counter2 & 0x2) == 0) {
@@ -262,7 +263,13 @@ void AP_BoardLED2::update(void)
             }            
             break;        
     }
+	
+		if (AP::ahrs().home_is_set() && AP::logger().logging_started()) {
+	   		  hal.gpio->write(HAL_GPIO_A_LED_PIN, HAL_GPIO_LED_ON);
+		}
+		
 }
+
 #else
 bool AP_BoardLED2::init(void) {return true;}
 void AP_BoardLED2::update(void) {return;}
