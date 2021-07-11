@@ -16,6 +16,10 @@
 
 #include "AP_Notify.h"
 
+#include <AP_AHRS/AP_AHRS.h>
+#include <AP_Logger/AP_Logger.h>
+
+
 
 // show all status on only 2 leds
 
