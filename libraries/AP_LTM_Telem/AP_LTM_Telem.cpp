@@ -209,7 +209,7 @@ void AP_LTM_Telem::generate_LTM(void)
 void AP_LTM_Telem::tick(void)
 {
     uint32_t now = AP_HAL::millis();
-    if (now - _last_frame_ms >= 200) {
+    if (now - _last_frame_ms >= 100) {
         _last_frame_ms = now;
         generate_LTM();
     }
