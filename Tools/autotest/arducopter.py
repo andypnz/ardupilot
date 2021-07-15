@@ -2858,13 +2858,16 @@ class AutoTestCopter(AutoTest):
             raise ex
 
     def test_terrain_spline_mission(self):
-        self.set_parameter("AUTO_OPTIONS", 3)
         self.set_parameter("TERRAIN_ENABLE", 0)
-        self.load_mission("wp.txt")
+        self.fly_mission("wp.txt")
+
+    def fly_mission(self, filename, strict=True):
+        num_wp = self.load_mission(filename, strict=strict)
+        self.set_parameter("AUTO_OPTIONS", 3)
         self.change_mode('AUTO')
         self.wait_ready_to_arm()
         self.arm_vehicle()
-        self.wait_waypoint(4, 4)
+        self.wait_waypoint(num_wp-1, num_wp-1)
         self.wait_disarmed()
 
     def test_surface_tracking(self):
@@ -6818,6 +6821,63 @@ class AutoTestCopter(AutoTest):
         if not ok:
             raise NotAchievedException("check_replay failed")
 
+    def BaroDrivers(self):
+        sensors = [
+            ("MS5611", 2),
+        ]
+        for (name, bus) in sensors:
+            self.context_push()
+            if bus is not None:
+                self.set_parameter("BARO_EXT_BUS", bus)
+            self.set_parameter("BARO_PROBE_EXT", 1 << 2)
+            self.reboot_sitl()
+            self.wait_ready_to_arm()
+            self.arm_vehicle()
+
+            # insert listener to compare airspeeds:
+            messages = [None, None, None]
+
+            global count
+            count = 0
+
+            def check_pressure(mav, m):
+                global count
+                m_type = m.get_type()
+                count += 1
+                # if count > 500:
+                #     if press_abs[0] is None or press_abs[1] is None:
+                #         raise NotAchievedException("Not receiving messages")
+                if m_type == 'SCALED_PRESSURE3':
+                    off = 2
+                elif m_type == 'SCALED_PRESSURE2':
+                    off = 1
+                elif m_type == 'SCALED_PRESSURE':
+                    off = 0
+                else:
+                    return
+
+                messages[off] = m
+
+                # FIXME: make the numbers we use in the i2c simulated
+                # baros closer to the ones from AP_Baro_SITL
+                if None in messages:
+                    return
+                first = messages[0]
+                for msg in messages[1:]:
+                    delta_press_abs = abs(first.press_abs - msg.press_abs)
+                    if delta_press_abs > 5:
+                        raise NotAchievedException("Press_Abs mismatch (press1=%s press2=%s)" % (first, msg))
+                    delta_temperature = abs(first.temperature - msg.temperature)
+                    if delta_temperature > 1000:  # that's 10-degrees leeway
+                        raise NotAchievedException("Temperature mismatch (t1=%s t2=%s)" % (first, msg))
+            self.install_message_hook_context(check_pressure)
+            self.fly_mission("copter_mission.txt", strict=False)
+            if None in messages:
+                raise NotAchievedException("Missing a message")
+
+            self.context_pop()
+        self.reboot_sitl()
+
     def test_copter_gps_zero(self):
         # https://github.com/ArduPilot/ardupilot/issues/14236
         self.progress("arm the vehicle and takeoff in Guided")
@@ -6939,7 +6999,8 @@ class AutoTestCopter(AutoTest):
 
         self.wait_altitude(100, 1000, timeout=100, relative=True)
         self.context_collect('STATUSTEXT')
-        self.wait_statustext("throw detected - uprighting", check_context=True, timeout=10)
+        self.wait_statustext("throw detected - spooling motors", check_context=True, timeout=10)
+        self.wait_statustext("throttle is unlimited - uprighting", check_context=True)
         self.wait_statustext("uprighted - controlling height", check_context=True)
         self.wait_statustext("height achieved - controlling position", check_context=True)
         self.progress("Waiting for still")
@@ -6966,8 +7027,8 @@ class AutoTestCopter(AutoTest):
             pass
 
         self.wait_altitude(100, 1000, timeout=100, relative=True)
-        self.context_collect('STATUSTEXT')
-        self.wait_statustext("throw detected - uprighting", check_context=True, timeout=10)
+        self.wait_statustext("throw detected - spooling motors", check_context=True, timeout=10)
+        self.wait_statustext("throttle is unlimited - uprighting", check_context=True)
         self.wait_statustext("uprighted - controlling height", check_context=True)
         self.wait_statustext("height achieved - controlling position", check_context=True)
         self.wait_mode('AUTO')
@@ -7326,6 +7387,10 @@ class AutoTestCopter(AutoTest):
             ("RangeFinder",
              "Test RangeFinder Basic Functionality",
              self.test_rangefinder),  # 23s
+
+            ("BaroDrivers",
+             "Test Baro Drivers",
+             self.BaroDrivers),
 
             ("SurfaceTracking",
              "Test Surface Tracking",
