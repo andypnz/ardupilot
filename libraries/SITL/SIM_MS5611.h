@@ -4,9 +4,11 @@
 
 namespace SITL {
 
-class MS5525 : public MS5XXX
+class MS5611 : public MS5XXX
 {
 public:
+
+    using MS5XXX::MS5XXX;
 
 protected:
 
@@ -24,20 +26,18 @@ private:
     // this data comes from the datasheet page 7
     const uint16_t prom[8] {
         0xFFFF,  // reserved
-        36402, // C1, pressure sensitivity
-        39473, // C2, pressure offset
-        40393, // C3, temperature coeff of press sensit
-        29523, // C4, temperature cofff of press offs
-        29854, // C5, ref temperature
-        21917,  // C6, temperature coeff of temperature
-        0x000c  // checksum
+        40127, // C1, pressure sensitivity
+        36924, // C2, pressure offset
+        23317, // C3, temperature coeff of press sensit
+        23282, // C4, temperature cofff of press offs
+        33464, // C5, ref temperature
+        28312,  // C6, temperature coeff of temperature
+        0x0008  // checksum
     };
 
-    // for 5525DSO-pp001DS
     const uint8_t Qx_coeff[6] {
         15, 17, 7, 5, 7, 21
     };
-
 
 };
 
